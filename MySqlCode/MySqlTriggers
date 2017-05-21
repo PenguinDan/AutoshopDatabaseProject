@@ -1,0 +1,140 @@
+delimiter :
+
+CREATE TRIGGER UPDATE_REFERENCE
+BEFORE INSERT ON Referral
+FOR EACH ROW
+BEGIN
+DECLARE txt VarChar(200);
+	IF NEW.RefCreateID IN (Select RefCreateID From Prospective_Referral_ID_List) THEN
+		SET txt = "YOU SHOULDN'T HAVE DONE THAT BOOOYYYYYYYY";
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = txt;
+	end if;
+end:
+
+CREATE TRIGGER CORPORATION_INDIVIDUAL
+BEFORE INSERT ON Corporation
+FOR EACH ROW
+BEGIN
+DECLARE txt VARCHAR(200);
+	IF NEW.CustomerID IN (SELECT CustomerID FROM Individual) THEN
+		SET txt = "Cannot create a customer with the this customer type";
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = txt;
+    END IF;
+END
+
+CREATE TRIGGER INDIVIDUAL_CORPORATION
+BEFORE INSERT ON Individual
+FOR EACH ROW
+BEGIN
+DECLARE txt VARCHAR(200);
+	IF NEW.CustomerID IN (SELECT CustomerID FROM Corporation) THEN
+		SET txt = "Cannot create a customer with the this customer type";
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = txt;
+    END IF;
+END
+
+CREATE TRIGGER CARDEPARTURE_MAINTENANCEVISIT
+BEFORE INSERT ON CarDeparture
+FOR EACH ROW 
+BEGIN
+DECLARE txt VARCHAR(200);
+	IF NEW.DepartureTime <  (SELECT ArrivalTime FROM MaintenanceVisit WHERE OrderID = NEW.OrderID) THEN
+		SET txt = "Bruh, you can't leave before you've arrived";
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = txt;
+    END IF;
+END
+
+CREATE TRIGGER MAINTENANCEVISIT_CUSTOMER
+BEFORE INSERT ON MaintenanceVisit
+FOR EACH ROW
+BEGIN
+DECLARE txt VARCHAR(200);
+	IF NEW.VisitDate < (SELECT JoinedPlanDate FROM Customer WHERE CustomerID = NEW.CustomerID)
+    THEN
+		SET txt = "You cannot visit us unless you're a customer";
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = txt;
+    END IF;
+END
+
+CREATE TRIGGER LoyaltyPrice_Redeemable
+BEFORE INSERT ON LoyaltyPrice
+FOR EACH ROW
+BEGIN
+DECLARE txt VARCHAR(200);
+	IF (SELECT isLoyaltyRedeemable FROM MaintenanceItem WHERE ServiceName = NEW.ServiceName) = FALSE
+    THEN SET txt = "This item ain't loyalty redeemable";
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = txt;
+    END IF;
+END
+
+CREATE TRIGGER BadBehavior_CustomerDate
+BEFORE INSERT ON BadBehavior
+FOR EACH ROW
+BEGIN
+DECLARE txt VARCHAR(200);
+	IF NEW.`Date` < (SELECT JoinedPlanDate FROM Customer WHERE CustomerID = NEW.PremierID)
+    THEN
+		SET txt = "You cannot have a bad behavior before you were a customer";
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = txt;
+    END IF;
+END
+
+CREATE TRIGGER MENTORSHIP_STARTEND
+BEFORE INSERT ON MentorshipEnd
+FOR EACH ROW
+BEGIN
+DECLARE txt VARCHAR(200);
+	IF NEW.EndDate < (SELECT StartDate FROM Mentorship WHERE StartDate = NEW.StartDate)
+    THEN
+		SET txt = "You cannot have a a mentorship end before a start date";
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = txt;
+    END IF;
+END
+
+delimiter !
+create trigger steady_insert
+before insert on Steady
+for each row
+begin
+	declare txt varchar(200);
+	if new.SteadyID in (select PremierID from Premier) then
+		set txt = "This customer is already a premier customer.";
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = txt;
+	elseif new.SteadyID in (select ProspectiveID from Prospective) then
+		set txt = "This customer is already a prospective customer.";
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = txt;
+	end if;
+end!
+
+delimiter !
+create trigger premier_insert
+before insert on Premier
+for each row
+begin
+	declare txt varchar(200);
+    if new.PremierID in (select SteadyID from Steady) then
+		set txt = "This customer is already a steady customer.";
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = txt;
+	elseif new.PremierID in (select ProspectiveID from Prospective) then
+		set txt = "This customer is already a prospective customer.";
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = txt;
+	end if;
+end!
+
+delimiter !
+create trigger prospective_insert
+before insert on Prospective
+for each row
+begin
+	declare txt varchar(200);
+    if new.ProspectiveID in (select SteadyID from Steady) then
+		set txt = "This customer is already a steady customer.";
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = txt;
+	elseif new.ProspectiveID in (select PremierID from Premier) then
+		set txt = "This customer is already a premier customer.";
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = txt;
+	end if;
+end!
+
+
+
