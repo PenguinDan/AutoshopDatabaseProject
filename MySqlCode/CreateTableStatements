@@ -1,0 +1,482 @@
+Create Table CustomerType (
+CustomerType varchar(20) Primary Key
+);
+
+Create Table PlanType (
+PlanType varchar(20) Primary Key
+);
+
+CREATE TABLE Customer (
+CustomerID INTEGER NOT NULL AUTO_INCREMENT,
+CustomerType VARCHAR(20) NOT NULL,
+PlanType VARCHAR(20) NOT NULL,
+JoinedPlanDate DATE NOT NULL,
+
+CONSTRAINT customerType_customer_fk01
+FOREIGN KEY (CustomerType)
+REFERENCES CustomerType (CustomerType),
+
+CONSTRAINT planType_customer_fk02
+FOREIGN KEY (PlanType)
+REFERENCES PlanType (PlanType),
+
+PRIMARY KEY (CustomerID)
+);
+
+CREATE TABLE Phone (
+CustomerID INTEGER NOT NULL ,
+PhoneNumber INTEGER(15) NOT NULL,
+
+CONSTRAINT customer_phone_fk01
+FOREIGN KEY (CustomerID)
+REFERENCES Customer (CustomerID),
+
+PRIMARY KEY (CustomerID)
+);
+
+CREATE TABLE Email (
+CustomerID INTEGER NOT NULL ,
+EmailAddress VARCHAR(60) NOT NULL,
+
+CONSTRAINT customer_email_fk01
+FOREIGN KEY (CustomerID)
+REFERENCES Customer (CustomerID),
+
+PRIMARY KEY (CustomerID)
+);
+
+
+CREATE TABLE Individual (
+CustomerID INTEGER NOT NULL ,
+FirstName VARCHAR(20) NOT NULL,
+LastName VARCHAR(20) NOT NULL,
+`Number` INTEGER NOT NULL,
+Street VARCHAR(25) NOT NULL,
+City VARCHAR(20) NOT NULL,
+ZipCode INTEGER(10) NOT NULL,
+State VARCHAR(15) NOT NULL,
+
+CONSTRAINT customer_individual_fk01
+FOREIGN KEY (CustomerID)
+REFERENCES Customer (CustomerID),
+
+PRIMARY KEY (CustomerID)
+);
+
+CREATE TABLE Corporation (
+CustomerID INTEGER NOT NULL ,
+CorporationName VARCHAR(50) NOT NULL,
+
+CONSTRAINT customer_corporation_fk01
+FOREIGN KEY (CustomerID)
+REFERENCES Customer (CustomerID),
+
+PRIMARY KEY (CustomerID)
+);
+
+CREATE TABLE AddressType (
+AddressType VARCHAR(20) PRIMARY KEY
+);
+
+CREATE TABLE Address (
+CustomerID INTEGER NOT NULL ,
+AddressType VARCHAR(20) NOT NULL,
+`Number` INTEGER NOT NULL,
+Street VARCHAR(25) NOT NULL,
+City VARCHAR(20) NOT NULL,
+ZipCode INTEGER(10) NOT NULL,
+State VARCHAR(15) NOT NULL,
+
+CONSTRAINT customer_address_fk01
+FOREIGN KEY (CustomerID)
+REFERENCES Customer (CustomerID),
+
+CONSTRAINT addressType_address_fk02
+FOREIGN KEY (AddressType)
+REFERENCES AddressType (AddressType),
+
+PRIMARY KEY (CustomerID, AddressType)
+);
+
+CREATE TABLE Make (
+Make VARCHAR(25) PRIMARY KEY
+);
+
+CREATE TABLE Model (
+Model VARCHAR(25) PRIMARY KEY
+);
+
+CREATE TABLE VehicleInformation (
+Make VARCHAR(25) NOT NULL,
+Model VARCHAR(25) NOT NULL,
+`Year` INTEGER(4) NOT NULL,
+
+CONSTRAINT make_vehicleInformation_fk01
+FOREIGN KEY (Make)
+REFERENCES Make (Make),
+
+CONSTRAINT model_vehicleInformation_fk02
+FOREIGN KEY (Model)
+REFERENCES Model (Model),
+
+PRIMARY KEY (Make, Model, `Year`)
+);
+
+CREATE TABLE Prospective (
+ProspectiveID INTEGER NOT NULL ,
+
+CONSTRAINT customer_prospective_fk01
+FOREIGN KEY (ProspectiveID)
+REFERENCES Customer(CustomerID),
+
+PRIMARY KEY (ProspectiveID)
+);
+
+CREATE TABLE Steady (
+SteadyID INTEGER NOT NULL ,
+
+CONSTRAINT customer_steady_fk01
+FOREIGN KEY (SteadyID)
+REFERENCES Customer (CustomerID),
+
+PRIMARY KEY (SteadyID)
+);
+
+CREATE TABLE Premier (
+PremierID INTEGER NOT NULL ,
+
+CONSTRAINT customer_premier_fk01
+FOREIGN KEY (PremierID)
+REFERENCES Customer (CustomerID),
+
+PRIMARY KEY (PremierID)
+);
+
+CREATE TABLE Referral (
+RefDirectedID INTEGER NOT NULL,
+RefCreateID INTEGER NOT NULL,
+`Date` DATE NOT NULL,
+
+CONSTRAINT customer_referral_fk01 
+FOREIGN KEY (RefDirectedID)
+REFERENCES Customer (CustomerID),
+
+CONSTRAINT customer_referral_fk02
+FOREIGN KEY (RefCreateID)
+REFERENCES Customer (CustomerID),
+
+PRIMARY KEY (RefDirectedID, RefCreateID, `Date`)
+);
+
+create table BadBehavior
+(
+PremierID integer,
+`Date` Date,
+Reason varchar(50),
+PenaltyCost integer,
+constraint BadBehavior_PK primary key (PremierID,`Date`),
+constraint BadBehavior_FK foreign key(PremierID) references Premier(PremierID)
+);
+
+CREATE TABLE Vehicle (
+CustomerID INTEGER NOT NULL ,
+Model VARCHAR(25) NOT NULL,
+Make VARCHAR(25) NOT NULL,
+VIN INTEGER NOT NULL,
+LicensePlate VARCHAR(15) NOT NULL,
+Mileage INTEGER NOT NULL,
+AnnualMileageEstimate INTEGER NOT NULL,
+Color VARCHAR(15) NOT NULL,
+
+CONSTRAINT customer_vehicle_fk01
+FOREIGN KEY (CustomerID)
+REFERENCES Customer (CustomerID),
+
+CONSTRAINT vehicleInformation_vehicle_fk02
+FOREIGN KEY (Model, Make)
+REFERENCES VehicleInformation (Model, Make),
+
+PRIMARY KEY (CustomerID, Model, Make, VIN)
+);
+
+CREATE TABLE VehicleInterval (
+Model VARCHAR(25) NOT NULL,
+Make VARCHAR(25) NOT NULL,
+SetInterval INTEGER NOT NULL,
+
+CONSTRAINT model_vehicleInterval_fk01
+FOREIGN KEY (Model)
+REFERENCES Model (Model),
+
+CONSTRAINT make_vehicleInterval_fk02
+FOREIGN KEY (Make)
+REFERENCES Make (Make),
+
+PRIMARY KEY (Model, Make, SetInterval)
+);
+
+CREATE TABLE Notification (
+CustomerID INTEGER NOT NULL ,
+Model VARCHAR(25) NOT NULL,
+Make VARCHAR(25) NOT NULL,
+VIN INTEGER NOT NULL,
+SetInterval INTEGER NOT NULL,
+NotificationDate DATE NOT NULL,
+
+CONSTRAINT vehicle_notification_fk01
+FOREIGN KEY (CustomerID, Model, Make, VIN)
+REFERENCES Vehicle (CustomerID, Model, Make, VIN),
+
+CONSTRAINT vehicleInterval_notification_fk01
+FOREIGN KEY (Model, Make, SetInterval)
+REFERENCES VehicleInterval (Model, Make, SetInterval),
+
+PRIMARY KEY (CustomerID, Model, Make, VIN, SetInterval, NotificationDate)
+);
+
+CREATE TABLE Appointment (
+CustomerID INTEGER NOT NULL ,
+Model VARCHAR(25) NOT NULL,
+Make VARCHAR(25) NOT NULL,
+VIN INTEGER NOT NULL,
+AppointmentDate DATE NOT NULL,
+AppointmentTime TIME NOT NULL,
+
+CONSTRAINT vehicle_appointment_fk01
+FOREIGN KEY (CustomerID, Model, Make, VIN)
+REFERENCES Vehicle (CustomerID, Model, Make, VIN),
+
+
+PRIMARY KEY (CustomerID, Model, Make, VIN, AppointmentDate, AppointmentTime)
+);
+
+CREATE TABLE Employee (
+EmployeeID INTEGER NOT NULL AUTO_INCREMENT,
+FirstName VARCHAR (20) NOT NULL,
+LastName VARCHAR(20) NOT NULL,
+
+PRIMARY KEY (EmployeeID)
+);
+
+CREATE TABLE ServiceTechnician (
+TechID INTEGER NOT NULL ,
+
+CONSTRAINT employee_serviceTechnician_fk01
+FOREIGN KEY (TechID)
+REFERENCES Employee (EmployeeID),
+
+PRIMARY KEY (TechID)
+);
+
+CREATE TABLE Mechanic (
+MechID INTEGER NOT NULL ,
+
+CONSTRAINT employee_mechanic_fk01
+FOREIGN KEY (MechID)
+REFERENCES Employee (EmployeeID),
+
+PRIMARY KEY (MechID)
+);
+
+CREATE TABLE Skill (
+SkillName VARCHAR(40) NOT NULL,
+
+PRIMARY KEY (SkillName)
+);
+
+CREATE TABLE `Day` (
+`Day` VARCHAR(10) NOT NULL,
+
+PRIMARY KEY (`Day`)
+);
+
+CREATE TABLE Shift (
+`Day` VARCHAR(10) NOT NULL,
+ShiftTime TIME NOT NULL,
+
+CONSTRAINT day_shift_fk01
+FOREIGN KEY (`Day`)
+REFERENCES `Day` (`Day`),
+
+PRIMARY KEY (`Day`, ShiftTime)
+);
+
+CREATE TABLE EmpShift (
+EmpID INTEGER NOT NULL ,
+`Day` VARCHAR(10) NOT NULL,
+ShiftTime TIME NOT NULL,
+
+CONSTRAINT shift_empShift_fk01
+FOREIGN KEY (`Day`, ShiftTime)
+REFERENCES Shift (`Day`, ShiftTime),
+
+CONSTRAINT employee_empShift_fk02
+FOREIGN KEY (EmpID)
+REFERENCES Employee (EmployeeID),
+
+PRIMARY KEY (EmpID, `Day`, ShiftTime)
+);
+
+CREATE TABLE MechSkill (
+MechID INTEGER NOT NULL ,
+Skill VARCHAR(40) NOT NULL,
+
+CONSTRAINT mechanic_mechSkill_fk01
+FOREIGN KEY (MechID)
+REFERENCES Mechanic (MechID),
+
+CONSTRAINT skill_mechSkill_fk02
+FOREIGN KEY (Skill)
+REFERENCES Skill (SkillName),
+
+PRIMARY KEY (MechID, Skill)
+);
+
+CREATE TABLE Mentorship (
+MentorID INTEGER NOT NULL ,
+MenteeID INTEGER NOT NULL ,
+Skill varchar(40) NOT NULL,
+StartDate DATE NOT NULL,
+
+CONSTRAINT mechanic_mentorship_fk01
+FOREIGN KEY (MentorID,Skill)
+REFERENCES MechSkill (MechID,Skill),
+
+CONSTRAINT mechanic_mentorship_fk02
+FOREIGN KEY (MenteeID)
+REFERENCES Mechanic (MechID),
+
+PRIMARY KEY (MentorID, MenteeID, Skill, StartDate)
+);
+
+CREATE TABLE MentorshipEnd (
+MentorID INTEGER NOT NULL ,
+MenteeID INTEGER NOT NULL ,
+Skill varchar(40) NOT NULL,
+StartDate DATE NOT NULL,
+EndDate DATE NOT NULL,
+
+CONSTRAINT mentorship_mentorshipEnd_fk01
+FOREIGN KEY (MentorID, MenteeID, Skill, StartDate)
+REFERENCES Mentorship (MentorID, MenteeID, Skill, StartDate),
+
+PRIMARY KEY (MentorID, MenteeID, Skill, StartDate)
+);
+
+
+CREATE TABLE MaintenanceVisit (
+CustomerID INTEGER NOT NULL ,
+Model VARCHAR(25) NOT NULL,
+Make VARCHAR(25) NOT NULL,
+VIN INTEGER NOT NULL,
+OrderID INTEGER NOT NULL AUTO_INCREMENT,
+VisitDate DATE NOT NULL,
+ArrivalTime TIME NOT NULL,
+CurrMileage INTEGER NOT NULL,
+Reason VARCHAR(50) NOT NULL,
+TechID INTEGER NOT NULL ,
+
+CONSTRAINT vehicle_maintenanceVisit_fk01
+FOREIGN KEY (CustomerID, Model, Make, VIN)
+REFERENCES Vehicle (CustomerID, Model, Make, VIN),
+
+CONSTRAINT serviceTechnician_maintenanceVisit_fk02
+FOREIGN KEY (TechID)
+REFERENCES ServiceTechnician (TechID),
+
+PRIMARY KEY (OrderID)
+);
+
+CREATE TABLE CarDeparture (
+OrderID INTEGER NOT NULL AUTO_INCREMENT,
+DepartureTime TIME NOT NULL,
+
+CONSTRAINT maintenanceVisit_carDeparture_fk01
+FOREIGN KEY (OrderID)
+REFERENCES MaintenanceVisit (OrderID),
+
+PRIMARY KEY (OrderID)
+);
+
+CREATE TABLE MaintenanceItem (
+ServiceName VARCHAR(50) NOT NULL,
+Runtime INTEGER NOT NULL,
+Description VARCHAR(60) NOT NULL,
+isLoyaltyRedeemable BOOLEAN NOT NULL,
+Fee INTEGER NOT NULL,
+
+PRIMARY KEY (ServiceName)
+);
+
+CREATE TABLE MaintenancePackage (
+PackageName VARCHAR(50) NOT NULL,
+Make VARCHAR(25) NOT NULL,
+Model VARCHAR(25) NOT NULL,
+SetInterval INTEGER NOT NULL,
+PRICE INTEGER NOT NULL,
+
+CONSTRAINT vehicleInterval_maintenancePackage_fk01
+FOREIGN KEY (Make, Model, SetInterval)
+REFERENCES VehicleInterval (Make, Model, SetInterval),
+
+PRIMARY KEY (PackageName)
+);
+
+CREATE TABLE MaintenanceSkill (
+ServiceName VARCHAR(50) NOT NULL,
+SkillName VARCHAR(40) NOT NULL,
+
+CONSTRAINT maintenanceItem_maintenanceSkill_fk01
+FOREIGN KEY (ServiceName)
+REFERENCES MaintenanceItem (ServiceName),
+
+CONSTRAINT skill_maintenanceSkill_fk02
+FOREIGN KEY (SkillName)
+REFERENCES Skill (SkillName)
+);
+
+CREATE TABLE LoyaltyPrice (
+ServiceName VARCHAR(50) NOT NULL,
+LoyalPointPrice INTEGER NOT NULL,
+
+CONSTRAINT maintenanceItem_loyaltyPrice_fk01
+FOREIGN KEY (ServiceName)
+REFERENCES MaintenanceItem (ServiceName),
+
+PRIMARY KEY (ServiceName)
+);
+CREATE TABLE PackageCombo (
+ServiceName VarChar(50) Not Null,
+PackageName VarChar(50) Not Null,
+Primary Key(ServiceName, PackageName),
+Foreign Key (ServiceName)
+references MaintenanceItem(ServiceName),
+Foreign Key(PackageName)
+references MaintenancePackage(PackageName)
+);
+
+CREATE TABLE MaintenanceVisitOrder(
+OrderID int(11) Not Null,
+PackageName VarChar(50),
+ServiceName VarChar(50) Not Null,
+Primary Key(OrderID, ServiceName),
+FOREIGN KEY (OrderID)
+REFERENCES MaintenanceVisit(OrderID),
+
+Foreign Key (ServiceName)
+references MaintenanceItem(ServiceName),
+
+Foreign Key(PackageName, ServiceName)
+references PackageCombo(PackageName, ServiceName)
+);
+
+CREATE TABLE MechMaintenanceItem (
+OrderID int(11) Not Null,
+ServiceName VarChar(50) Not Null,
+MechID int(11) Not Null,
+Primary Key(OrderID, ServiceName, MechID),
+Foreign Key(OrderID, ServiceName)
+references MaintenanceVisitOrder(OrderID, ServiceName),
+foreign key(MechID)
+references Mechanic(MechID)
+);
