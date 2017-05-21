@@ -1,0 +1,561 @@
+#1. List the customers. For each customer, indicate which category he or she fall into, and his or her contact information. If you have more than one independent categorization of customers, please indicate which category the customer falls into for all of the categorizations.
+
+select * from Customer
+natural join Email
+natural join Phone
+natural join Corporation
+natural join Address
+union
+select * from Customer
+natural join Email
+natural join Phone
+natural join Individual;
+-- CustomerID, CustomerType, PlanType, JoinedPlanDate, EmailAddress, PhoneNumber, CorporationName, AddressType, Number, Street, City, ZipCode, State
+-- 29	Individual	Steady	2015-04-01	ofthejungle@ha.com	538758211	George	Ornotwell	84848	Book Lane	Flipping	19344	Michigan
+-- 28	Corporation	Premier	2016-12-30	icrycry@meme.com	576827111	Boohoo	Billing	192	Yaas Corner	Queen	128911	Michigan
+-- 28	Corporation	Premier	2016-12-30	icrycry@meme.com	576827111	Boohoo	Mailing	109149	Dont St	News	1992	Arizona
+-- 28	Corporation	Premier	2016-12-30	icrycry@meme.com	576827111	Boohoo	Vehicle Pickup	1292	Hit Me Ave	Search Engine	91248	New Mexico
+-- 27	Individual	Prospective	2016-06-22	toosmarForYou@328.com	192014111	Dave	Bronzestein	10101	Smart Street	Genius	928111	Wisconsin
+-- 26	Individual	Steady	2014-04-04	DanDanCrud@nice.com	1219011	Daniel	Jack	7474	Whiskey Street	Alcohol	929292	California
+-- 25	Corporation	Premier	2016-01-01	biggle@naw.com	1876576161	Smallgle	Billing	100	Click Me St	Websearch	918422	Florida
+-- 24	Corporation	Steady	2015-11-18	iliketurtles@sea.com	1182749128	Orange	Billing	91011	IWatch Corner	Watch	881818	Ohio
+-- 24	Corporation	Steady	2015-11-18	iliketurtles@sea.com	1182749128	Orange	Mailing	19091	IPhone St	Mobile	218974	Washington
+-- 24	Corporation	Steady	2015-11-18	iliketurtles@sea.com	1182749128	Orange	Vehicle Delivery	19223	IPad Ave	Tablet	92094	Michigan
+-- 24	Corporation	Steady	2015-11-18	iliketurtles@sea.com	1182749128	Orange	Vehicle Pickup	3214	IPod Lane	Music	10924	Idaho
+-- 23	Corporation	Premier	2017-01-22	windows@gates.com	281010111	Macrohard	Mailing	719911	System St	Hardware	421444	South Dakota
+-- 23	Corporation	Premier	2017-01-22	windows@gates.com	281010111	Macrohard	Vehicle Delivery	6647	Operating Ave	Computer	821813	North Dakota
+-- 23	Corporation	Premier	2017-01-22	windows@gates.com	281010111	Macrohard	Vehicle Pickup	92191	Windows Lane	Software	1011	West Dakota
+-- 22	Individual	Steady	2013-09-02	JellyFish@krusty.com	1982792814	Spongebob	Circleshirt	124	Conch Street	Bikini Bottom	673641	Ocean Land
+-- 21	Individual	Premier	2015-10-01	saxophone@awesome.com	1149228333	Octopusward	Tentauncool	2111	Conch Street	Bikini Bottom	673641	Ocean Land
+-- 
+
+#2. For each service visit, list the total cost to the customer for that visit.
+
+select concat(Individual.LastName, ', ', Individual.FirstName) as CustomerName, MaintenanceVisit.OrderID, VisitDate, sum(Fee) as total from MaintenanceVisitOrder
+natural join MaintenanceVisit
+inner join Individual using(CustomerID)
+left outer join MaintenanceItem using(ServiceName)
+left outer join MaintenancePackage using(PackageName)
+group by OrderID
+union
+select Corporation.CorporationName as CustomerName, MaintenanceVisit.OrderID, VisitDate, sum(Fee) as total from MaintenanceVisitOrder
+natural join MaintenanceVisit
+inner join Corporation using(CustomerID)
+left outer join MaintenanceItem using(ServiceName)
+left outer join MaintenancePackage using(PackageName)
+group by OrderID;
+
+-- CustomerName, OrderID, VisitDate, total
+-- Tentauncool, Octopusward	2000	2015-10-05	66
+-- Tentauncool, Octopusward	2091	2017-04-08	116
+-- Tentauncool, Octopusward	2097	2015-10-02	116
+-- Tentauncool, Octopusward	2099	2016-02-21	96
+-- Tentauncool, Octopusward	2101	2016-09-22	116
+-- Tentauncool, Octopusward	2102	2016-11-05	96
+-- Tentauncool, Octopusward	2104	2015-10-02	116
+-- Circleshirt, Spongebob	2033	2013-09-17	116
+-- Circleshirt, Spongebob	2034	2014-09-17	116
+-- Ornotwell, George	2064	2014-01-06	76
+-- Woman, Man	2065	2014-08-15	76
+-- CookieMonster, Share	2067	2014-10-06	66
+-- Tentauncool, Octopusward	2098	2015-12-21	76
+-- Tentauncool, Octopusward	2103	2017-03-15	76
+-- Tentauncool, Octopusward	2110	2017-03-15	76
+-- Tentauncool, Octopusward	2125	2017-03-02	76
+-- Churros, No	2066	2016-12-06	56
+-- Tentauncool, Octopusward	2032	2015-10-06	56
+-- Tentauncool, Octopusward	2090	2016-10-05	128
+-- Tentauncool, Octopusward	2100	2016-05-22	98
+-- Tentauncool, Octopusward	2111	2015-10-14	98
+-- Jack, Daniel	2061	2014-06-06	100
+-- Bronzestein, Dave	2062	2016-07-06	40
+-- Tentauncool, Octopusward	2112	2016-05-11	96
+-- Perfection, Daniel	2068	2017-02-28	60
+-- Macrohard	2115	2017-01-22	82
+-- Macrohard	2118	2017-04-22	82
+-- Orange	2038	2015-11-30	116
+-- Orange	2095	2016-11-30	82
+-- Smallgle	2133	2016-12-02	96
+-- Smallgle	2138	2016-12-03	96
+-- Smallgle	2143	2016-12-04	96
+-- Smallgle	2148	2016-12-04	96
+-- Smallgle	2153	2016-12-04	96
+-- Boohoo	2176	2017-01-04	96
+-- Boohoo	2178	2017-04-04	102
+-- Boohoo	2180	2017-01-17	82
+-- Macrohard	2126	2017-02-15	76
+-- Macrohard	2127	2017-02-16	76
+-- Macrohard	2116	2017-05-02	106
+-- Macrohard	2128	2017-02-17	76
+-- Orange	2059	2015-04-30	76
+-- Orange	2096	2017-05-05	76
+-- Smallgle	2130	2016-02-02	76
+-- Smallgle	2166	2017-03-05	76
+-- Smallgle	2135	2016-02-03	76
+-- Smallgle	2139	2017-03-01	76
+-- Smallgle	2168	2017-03-05	76
+-- Smallgle	2140	2016-02-04	76
+-- Smallgle	2170	2017-03-05	76
+-- Smallgle	2145	2016-02-04	76
+-- Smallgle	2149	2017-03-02	76
+-- Smallgle	2150	2016-02-04	76
+-- Smallgle	2172	2017-03-05	76
+-- Boohoo	2155	2017-02-02	76
+-- Boohoo	2156	2017-02-02	76
+-- Boohoo	2181	2017-03-17	76
+-- Boohoo	2157	2017-02-02	76
+-- Macrohard	2036	2017-09-30	86
+-- Macrohard	2037	2017-10-31	86
+-- Boohoo	2179	2017-05-04	114
+-- Smallgle	2131	2016-05-02	98
+-- Smallgle	2167	2017-05-05	132
+-- Smallgle	2136	2016-05-03	98
+-- Smallgle	2169	2017-05-05	132
+-- Smallgle	2141	2016-05-04	98
+-- Smallgle	2171	2017-05-05	132
+-- Smallgle	2146	2016-05-04	98
+-- Smallgle	2151	2016-05-04	98
+-- Smallgle	2173	2017-05-05	132
+-- Boohoo	2177	2017-03-04	132
+-- Boohoo	2182	2017-04-17	98
+-- Macrohard	2114	2017-07-04	102
+-- Macrohard	2117	2017-01-22	102
+-- Boohoo	2184	2017-01-22	128
+-- Boohoo	2183	2017-05-17	96
+-- 
+
+#3. List the top three customers in terms of their net spending for the past two years, and the total that they have spent in that period.
+
+select concat(Individual.LastName, ', ', Individual.FirstName) as CustomerName, 
+		sum(Fee) as total
+from MaintenanceVisitOrder
+natural join MaintenanceVisit
+left outer join MaintenanceItem using(ServiceName)
+left outer join MaintenancePackage using(PackageName)
+inner join Individual using(CustomerID) 
+where FirstName is not null and LastName is not null
+and VisitDate >= curdate() - interval 2 year
+group by CustomerID
+union
+select Corporation.CorporationName, sum(Fee) as total
+from MaintenanceVisitOrder
+natural join MaintenanceVisit
+left outer join MaintenanceItem using(ServiceName)
+left outer join MaintenancePackage using(PackageName)
+inner join Corporation using(CustomerID)
+where VisitDate >= curdate() - interval 2 year
+group by CustomerID
+order by total desc
+limit 3;
+
+-- CustomerName, total 
+-- Smallgle								2334
+-- Tentauncool, Octopusward	1502
+-- Boohoo								1152
+
+
+#4. Find all of the mechanics who have three or more skills.
+
+select FirstName, LastName from Employee where EmployeeID in
+(select MechID from MechSkill
+group by MechID
+having count(Skill) >= 3);
+
+-- FirstName, LastName
+-- Jeremy	Lin
+-- Bob	Ross
+-- Mary	Sue
+-- Patrick	Star
+-- Jane	Doe
+-- Kanye	West
+-- Mark	Brown
+
+
+#5. Find all of the mechanics who have three or more skills in common.
+#a. Please give the name of each of the two mechanics sharing 3 or more skills.
+#b. Please make sure that any given pair of mechanics only shows up once.
+
+select a.FirstName, a.LastName, b.FirstName, b.LastName from
+(select MechID, Skill, FirstName, LastName from MechSkill
+inner join Employee on MechSkill.MechID = Employee.EmployeeID) a
+inner join
+(select MechID, Skill, FirstName, LastName from MechSkill
+inner join Employee on MechSkill.MechID = Employee.EmployeeID) b
+using(Skill)
+where a.MechID < b.MechID
+group by a.FirstName, a.LastName, b.FirstName, b.LastName
+having count(Skill) >= 3;
+
+-- FirstName, LastName, FirstName, LastName
+-- Jeremy	Lin			Patrick	Star
+-- Bob	Ross			Jane	Doe
+-- Mary	Sue				Kanye	West
+
+
+#6. For each maintenance package, list the total cost of the maintenance package, as well as a list of all of the maintenance items within that package.
+
+select PackageName, Services, PRICE
+from MaintenancePackage natural join (
+select PackageName, group_concat(ServiceName) as Services from PackageCombo
+group by PackageName) as `One`;
+
+
+-- PackageName, Services, PRICE
+-- 'Fall Package','Air Filter,Spark Plug,Timing Belt,Tire','116'
+-- 'Ferrari 488 GTB, 15000 Package','Air Filter,Belt,Brake,Coolant Service','96'
+-- 'Ferrari 488 GTB, 30000 Package','Distributor Cap and Rotor,Hose,Oil Change','98'
+-- 'Ferrari 488 GTB, 60000 Package','Air Filter,Spark Plug,Timing Belt,Tire','116'
+-- 'Ferrari 488 GTB, 85000 Package','Belt,Brake,Coolant Service,Distributor Cap and Rotor','106'
+-- 'Ferrari 488 Spider, 15000 Package','Hose,Oil Change,Spark Plug,Timing Belt','128'
+-- 'Ferrari 488 Spider, 30000 Package','Air Filter,Belt,Tire','76'
+-- 'Ferrari 488 Spider, 60000 Package','Brake,Coolant Service,Distributor Cap and Rotor,Hose','114'
+-- 'Ferrari 488 Spider, 85000 Package','Oil Change,Spark Plug,Timing Belt,Tire','100'
+-- 'Ferrari California, 15000 Package','Air Filter,Belt,Brake,Coolant Service','96'
+-- 'Ferrari California, 30000 Package','Distributor Cap and Rotor,Hose,Oil Change,Spark Plug','132'
+-- 'Ferrari California, 60000 Package','Air Filter,Belt,Timing Belt,Tire','102'
+-- 'Ferrari California, 85000 Package','Brake,Coolant Service,Distributor Cap and Rotor,Hose','114'
+-- 'Ford Explorer, 15000 Package','Brake,Coolant Service,Distributor Cap and Rotor','86'
+-- 'Ford Explorer, 30000 Package','Hose,Oil Change,Spark Plug','102'
+-- 'Ford Explorer, 60000 Package','Air Filter,Timing Belt,Tire','82'
+-- 'Ford Explorer, 85000 Package','Belt,Brake,Coolant Service,Distributor Cap and Rotor','106'
+-- 'Honda Accord, 15000 Package','Air Filter,Belt,Brake','76'
+-- 'Honda Accord, 30000 Package','Coolant Service,Distributor Cap and Rotor,Hose,Oil Change','114'
+-- 'Honda Accord, 60000 Package','Air Filter,Spark Plug,Timing Belt,Tire','116'
+-- 'Honda Accord, 85000 Package','Belt,Brake,Coolant Service','76'
+-- 'Honda Civic, 15000 Package','Oil Change,Spark Plug,Timing Belt','100'
+-- 'Honda Civic, 30000 Package','Air Filter,Belt,Tire','76'
+-- 'Honda Civic, 60000 Package','Brake,Coolant Service,Distributor Cap and Rotor','86'
+-- 'Honda Civic, 85000 Package','Hose,Oil Change,Spark Plug,Timing Belt','128'
+-- 'Nissan Altima, 15000 Package','Distributor Cap and Rotor,Hose,Oil Change','98'
+-- 'Nissan Altima, 30000 Package','Air Filter,Spark Plug,Timing Belt,Tire','116'
+-- 'Nissan Altima, 60000 Package','Belt,Brake,Coolant Service','76'
+-- 'Nissan Altima, 85000 Package','Distributor Cap and Rotor,Hose,Oil Change,Spark Plug','132'
+-- 'Nissan Optima, 15000 Package','Hose,Oil Change,Spark Plug','102'
+-- 'Nissan Optima, 30000 Package','Air Filter,Timing Belt,Tire','82'
+-- 'Nissan Optima, 60000 Package','Belt,Brake,Coolant Service','76'
+-- 'Nissan Optima, 85000 Package','Distributor Cap and Rotor,Hose,Oil Change','98'
+-- 'Spring Package','Belt,Brake,Coolant Service','66'
+-- 'Summer Package','Distributor Cap and Rotor,Hose,Oil Change','98'
+-- 'Toyota Camry, 15000 Package','Air Filter,Timing Belt,Tire','82'
+-- 'Toyota Camry, 30000 Package','Belt,Brake,Coolant Service','96'
+-- 'Toyota Camry, 60000 Package','Distributor Cap and Rotor,Hose,Oil Change','76'
+-- 'Toyota Camry, 85000 Package','Spark Plug,Timing Belt,Tire','96'
+-- 'Toyota Corolla, 15000 Package','Air Filter,Belt,Tire','76'
+-- 'Toyota Corolla, 30000 Package','Brake,Coolant Service,Distributor Cap and Rotor','86'
+-- 'Toyota Corolla, 60000 Package','Hose,Oil Change,Spark Plug','102'
+-- 'Toyota Corolla, 85000 Package','Air Filter,Belt,Timing Belt,Tire','102'
+-- 'Winter Package','Air Filter,Belt,Brake,Coolant Service','96'
+
+
+#7. Find all of those mechanics who have one or more maintenance items that they lacked one or more of the necessary skills.
+
+select FirstName, LastName from Employee
+where EmployeeID in
+(select distinct MechMaintenanceItem.MechID from MechMaintenanceItem
+natural join MechSkill
+natural join MaintenanceSkill
+where MechSkill.Skill <> MaintenanceSkill.SkillName
+order by MechID asc);
+
+-- FirstName, LastName
+-- Jeremy	Lin
+-- Bob	Ross
+-- Mary	Sue
+-- Patrick	Star
+-- Jane	Doe
+-- Kanye	West
+-- Mark	Brown
+
+
+#8. List the customers, sorted by the number of loyalty points that they have, from largest to smallest.
+
+select concat(Individual.LastName, ', ', Individual.FirstName) as CustomerName, 
+		MaintenanceVisit.CustomerID, sum(Fee)/10 as loyaltypoints
+from MaintenanceVisitOrder
+natural join MaintenanceVisit
+left outer join MaintenanceItem using(ServiceName)
+left outer join MaintenancePackage using(PackageName)
+inner join Individual using(CustomerID) 
+where FirstName is not null and LastName is not null
+group by CustomerID
+union
+select Corporation.CorporationName, MaintenanceVisit.CustomerID, sum(Fee)/10 as loyaltypoints
+from MaintenanceVisitOrder
+natural join MaintenanceVisit
+left outer join MaintenanceItem using(ServiceName)
+left outer join MaintenancePackage using(PackageName)
+inner join Corporation using(CustomerID)
+group by CustomerID
+order by loyaltypoints desc;
+
+-- CustomerName, CustomerID, loyaltyPoints
+-- Smallgle	25	233.4000
+-- Tentauncool, Octopusward	21	150.2000
+-- Boohoo	28	115.2000
+-- Macrohard	23	87.4000
+-- Orange	24	35.0000
+-- Circleshirt, Spongebob	22	23.2000
+-- Jack, Daniel	26	10.0000
+-- Ornotwell, George	29	7.6000
+-- Woman, Man	30	7.6000
+-- CookieMonster, Share	32	6.6000
+-- Perfection, Daniel	33	6.0000
+-- Churros, No	31	5.6000
+-- Bronzestein, Dave	27	4.0000
+
+
+#9. List the premier customers and the difference between what they have paid in the past year, versus the services that they actually used during that same time. List from the customers with the largest difference to the smallest.
+
+select concat(Individual.LastName, ', ', Individual.FirstName) as CustomerName, 
+Premier_Per_Year_Total.TotalFullYPayed - sum(Fee) as AmtDiff
+from MaintenanceVisitOrder
+natural join MaintenanceVisit
+left outer join MaintenanceItem using(ServiceName)
+left outer join MaintenancePackage using(PackageName)
+inner join Individual using(CustomerID)
+inner join Premier_Per_Year_Total on Premier_Per_Year_Total.PremierID = MaintenanceVisit.CustomerID 
+where FirstName is not null and LastName is not null
+and VisitDate >= curdate() - interval 1 year
+and CustomerID in (select * from Premier)
+group by CustomerID,TotalFullYPayed
+union
+select Corporation.CorporationName,
+Premier_Per_Year_Total.TotalFullYPayed - sum(Fee) as AmtDiff
+from MaintenanceVisitOrder
+natural join MaintenanceVisit
+left outer join MaintenanceItem using(ServiceName)
+left outer join MaintenancePackage using(PackageName)
+inner join Corporation using(CustomerID)
+inner join Premier_Per_Year_Total on Premier_Per_Year_Total.PremierID = MaintenanceVisit.CustomerID 
+where CustomerID in (select * from Premier)
+and VisitDate >= curdate() - interval 1 year
+group by CustomerID,TotalFullYPayed
+order by AmtDiff desc;
+
+-- CustomerName, AmtDiff
+-- Macrohard	-486.0000
+-- Tentauncool, Octopusward	-644.4000
+-- Boohoo	-792.0000
+-- Smallgle	-942.8000
+
+
+#10. Report on the steady customers based on the net profit that we have made from them over the past year, and the dollar amount of that profit, in order from the greatest to the least.
+
+select concat(Individual.LastName, ', ', Individual.FirstName) as CustomerName,
+sum(Fee+10) - sum(Fee) as Profit from MaintenanceVisitOrder
+natural join MaintenanceVisit
+left outer join MaintenanceItem using(ServiceName)
+left outer join MaintenancePackage using(PackageName)
+inner join Individual using(CustomerID) 
+where FirstName is not null and LastName is not null
+and VisitDate >= curdate() - interval 1 year
+and CustomerID in (select * from Steady)
+group by CustomerID
+union
+select Corporation.CorporationName, 
+sum(Fee+10) - sum(Fee) as Profit
+from MaintenanceVisitOrder
+natural join MaintenanceVisit
+left outer join MaintenanceItem using(ServiceName)
+left outer join MaintenancePackage using(PackageName)
+inner join Corporation using(CustomerID)
+where VisitDate >= curdate() - interval 1 year
+and CustomerID in (select * from Steady)
+group by CustomerID
+order by Profit desc;
+
+-- CustomerName, Profit
+-- Orange	60
+
+#11. List the three premier customers who have paid Dave’s Automotive the greatest amount in the past year,
+#and the sum of their payments over that period.
+#Be sure to take into account any discounts that they have earned by referring prospective customers.
+
+select concat(Individual.LastName, ', ', Individual.FirstName) as CustomerName, MaintenanceVisit.CustomerID,
+sum(Fee) as PaymentSum, TotalFullYPayed - 50 as AmtPaid
+from MaintenanceVisitOrder
+natural join MaintenanceVisit
+left outer join MaintenanceItem using(ServiceName)
+left outer join MaintenancePackage using(PackageName)
+inner join Individual using(CustomerID) 
+inner join Premier_Per_Year_Total on Premier_Per_Year_Total.PremierID = Individual.CustomerID
+where FirstName is not null and LastName is not null
+and VisitDate >= curdate() - interval 1 year
+and CustomerID in (select * from Premier)
+group by CustomerID, AmtPaid
+union
+select Corporation.CorporationName, MaintenanceVisit.CustomerID,
+sum(Fee) as PaymentSum, TotalFullYPayed - 50 as AmtPaid
+from MaintenanceVisitOrder
+natural join MaintenanceVisit
+left outer join MaintenanceItem using(ServiceName)
+left outer join MaintenancePackage using(PackageName)
+inner join Corporation using(CustomerID)
+inner join Premier_Per_Year_Total on Premier_Per_Year_Total.PremierID = Corporation.CustomerID
+where VisitDate >= curdate() - interval 1 year
+and CustomerID in (select * from Premier)
+group by CustomerID, AmtPaid
+order by AmtPaid desc
+limit 3;
+
+-- CustomerName, CustomerID, PaymentSum, AmtPaid
+-- Smallgle	25	1464	471.2000
+-- Macrohard	23	874	338.0000
+-- Boohoo	28	1152	310.0000
+ 
+#12. List the five model, make, and year that have caused the most visits on average to Dave’s automotive per vehicle in the past three years, along with the average number of visits per vehicle.
+
+select Model, Make, count(*) as Visits from MaintenanceVisit
+where VisitDate >= curdate() - interval 3 year
+group by Model, Make
+order by count(VisitDate) desc
+limit 5;
+
+-- Model, Make Visits
+-- Altima	Nissan	33
+-- Accord	Honda	17
+-- Camry	Toyota	15
+-- Explorer	Ford	12
+-- Optima	Nissan	5 
+
+#13. Find the mechanic who is mentoring the most other mechanics. List the skills that the mechanic is passing along to the other mechanics.
+
+select FirstName, LastName, Skill from
+(select MentorID, Skill from Mentorship where MentorID = (select MentorID from Mentorship
+group by MentorID
+having count(MenteeID) = (select max(test) from
+(select count(MenteeID) as test from Mentorship group by MentorID) a))) j
+inner join
+(select FirstName, LastName, EmployeeID from Employee where EmployeeID = (select MentorID from Mentorship
+group by MentorID
+having count(MenteeID) = (select max(test) from
+(select count(MenteeID) as test from Mentorship group by MentorID) a))) k
+on j.MentorID = k.EmployeeID;
+
+-- FirstName, LastName, Skill
+-- Jeremy	Lin	Computational Fluid Dynamics
+-- Jeremy	Lin	Engine Cleaning
+-- Jeremy	Lin	Head Machining
+
+
+#14. Find the three skills that have the fewest mechanics who have those skills.
+
+select Skill,count(MechID) as Mechs from MechSkill
+group by Skill
+order by Mechs asc
+limit 3;
+
+-- Skill, Mechs
+-- 'Troubleshooting','2'
+-- 'Equipment Maintenance','2'
+-- 'Software Operations','2'
+
+
+#15. List the employees who are both service technicians as well as mechanics.
+
+select FirstName, LastName from Employee
+where EmployeeID in
+(select TechID from ServiceTechnician)
+and EmployeeID in
+(select MechID from Mechanic);
+
+-- FirstName, LastName
+-- Kobe	Bryant
+-- Kanye	West
+-- Mark	Brown
+-- Josh	PizzaBoy
+-- Juice	ItUp
+
+
+#16. Three additional queries that demonstrate the five additional business rules. Feel free to create additional views to support these queries if you so desire.
+
+#Mechanic must know at least 3 Unique skills
+select FirstName, LastName from Employee
+where EmployeeID in
+(select MechID from MechSkill
+group by MechID
+having count(Skill) < 3);
+-- no output
+
+
+#Mechanics are on shifts
+select group_concat(Employee.FirstName, ' ', Employee.LastName) as Mechanics, 
+	   `Day`, 
+       ShiftTime from EmpShift
+inner join Employee on EmployeeID = EmpID
+where EmpID in (select MechID from Mechanic)
+group by `Day`, ShiftTime;
+
+# Mechanics, Day, ShiftTime
+#'Jane Doe,Patrick Star', 'Friday', '08:00:00'
+#'Mary Sue,Patrick Star', 'Monday', '08:00:00'
+#'Mark Brown,Kanye West', 'Saturday', '08:00:00'
+#'Kobe Bryant,Bob Ross,Jeremy Lin', 'Sunday', '08:00:00'
+#'Kobe Bryant,Bob Ross,Mary Sue', 'Thursday', '08:00:00'
+#'Jane Doe,Kanye West', 'Tuesday', '08:00:00'
+#'Mark Brown,Jeremy Lin', 'Wednesday', '08:00:00'
+
+
+#At most 3 services can overlap for a mechanic at a given time
+select OrderID, FirstName, LastName, count(ServiceName) from MechMaintenanceItem
+inner join Employee on MechID = EmployeeID
+group by OrderID,MechID
+order by count(ServiceName) desc;
+
+-- OrderID, FirstName, LastName, count(ServiceName)
+-- 2091	Kanye	West	2
+-- 2033	Dark	Knight	2
+-- 2033	Bat	Man	2
+-- 2000	Mary	Sue	1
+-- 2095	Juice	ItUp	1
+-- 2090	Patrick	Star	1
+-- 2096	Pewdi	Pie	1
+-- 2038	Mark	Brown	1
+-- 2064	Josh	PizzaBoy	1
+-- 2064	Jeremy	Lin	1
+-- 2000	Bat	Man	1
+-- 2090	Mary	Sue	1
+-- 2032	Pewdi	Pie	1
+-- 2034	Kanye	West	1
+-- 2067	Gung	Ho	1
+-- 2090	Mark	Brown	1
+-- 2066	Kobe	Bryant	1
+-- 2095	Dark	Knight	1
+-- 2067	Bob	Ross	1
+-- 2065	Juice	ItUp	1
+-- 2064	Patrick	Star	1
+-- 2091	Pewdi	Pie	1
+-- 2036	Josh	PizzaBoy	1
+-- 2037	Jeremy	Lin	1
+-- 2096	Bruce	Wayne	1
+-- 2059	Mary	Sue	1
+-- 2068	Cream	Soda	1
+-- 2061	Jane	Doe	1
+-- 2062	Gung	Ho	1
+-- 2067	Mark	Brown	1
+-- 2065	Kobe	Bryant	1
+-- 2061	Dark	Knight	1
+-- 2065	Bob	Ross	1
+-- 2038	Juice	ItUp	1
+-- 2038	Patrick	Star	1
+-- 2037	Pewdi	Pie	1
+-- 2068	Kanye	West	1
+-- 2034	Josh	PizzaBoy	1
+-- 2036	Jeremy	Lin	1
+-- 2038	Bruce	Wayne	1
+-- 2037	Mary	Sue	1
+-- 2059	Cream	Soda	1
+-- 2000	Jane	Doe	1
+-- 2061	Gung	Ho	1
+-- 2059	Mark	Brown	1
+-- 2034	Kobe	Bryant	1
+-- 2032	Bob	Ross	1
+-- 2096	Mary	Sue	1
+-- 2034	Pewdi	Pie	1
+-- 2066	Kanye	West	1
+-- 2091	Gung	Ho	1
+-- 2095	Mark	Brown	1
+-- 2090	Kobe	Bryant	1
+-- 2036	Bruce	Wayne	1
+
+
