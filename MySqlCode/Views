@@ -1,0 +1,85 @@
+#Creates view of customers
+create view Customer_v as
+select concat(LastName, ', ', FirstName) as 'CustomerName', 
+	   CustomerType, 
+       timestampdiff(year, JoinedPlanDate, curdate()) as 'YearsSinceJoined' from Customer
+natural join Individual
+union
+select CorporationName, CustomerType, 
+	   timestampdiff(year, JoinedPlanDate, curdate()) from Customer
+natural join Corporation;
+
+#creates view of customers’ addresses
+create view Customer_address_v as
+select concat(LastName, ', ', FirstName) as 'CustomerName', 
+	   CustomerType, 
+	   concat(`Number`, ' ', Street, ' ', City, ', ', State, ' ', Zipcode) as Address, 
+       'Residential' as AddressType from Customer
+natural join Individual
+union
+select CorporationName, CustomerType, 
+	   concat(`Number`, ' ', Street, ' ', City, ', ', State, ' ', Zipcode) as Address, 
+       AddressType from Customer
+natural join Corporation
+natural join Address;
+
+#Creates view of mentor-mentee relationships
+create view Mechanic_mentor_v as
+select concat(a.LastName, ', ', a.FirstName) as 'Mentor', 
+	   concat(b.LastName, ', ', b.FirstName) as 'Mentee' from Employee a
+inner join Mentorship on a.EmployeeID = Mentorship.MentorID
+inner join Employee b on b.EmployeeID = Mentorship.MenteeID
+where a.EmployeeID = Mentorship.MentorID
+and b.EmployeeID = Mentorship.MenteeID
+order by a.LastName, a.FirstName, b.LastName, b.FirstName;
+
+#create view comparing Premier fees to fees if the customer were Steady
+create view Premier_profits_v as
+select Premier.PremierID, 
+	   concat(LastName, ', ', FirstName) as CustomerName,
+       PremierFee.TotalFullYPayed as PremierOutlay,
+       year(VisitDate) as `Year`,
+       sum(Fee) as SteadyCustomerTotal from (select * from Premier_Per_Year_Total) as PremierFee
+inner join Premier using(PremierID)
+inner join Individual on Premier.PremierID = Individual.CustomerID
+inner join MaintenanceVisit on Premier.PremierID = MaintenanceVisit.CustomerID
+inner join MaintenanceVisitOrder using(OrderID)
+inner join MaintenanceItem using(ServiceName)
+group by PremierID, PremierFee.TotalFullYPayed, `Year`
+union
+select Premier.PremierID, CorporationName, 
+       PremierFee.TotalFullYPayed,
+       year(VisitDate) as `Year`,
+       sum(Fee) from (select * from Premier_Per_Year_Total) as PremierFee
+inner join Premier using(PremierID)
+inner join Corporation on Premier.PremierID = Corporation.CustomerID
+inner join MaintenanceVisit on Premier.PremierID = MaintenanceVisit.CustomerID
+inner join MaintenanceVisitOrder using(OrderID)
+inner join MaintenanceItem using(ServiceName)
+group by PremierID, PremierFee.TotalFullYPayed, `Year`;
+
+#Creates view of prospectives eligible to be recontacted
+create view Prospective_resurrection_v as
+select CustomerType, b.ProspectiveID, concat(LastName, ', ', FirstName) as 'CustomerName' from (
+	select a.ProspectiveID, max(NotificationDate) as MostRecentContact from (
+		select ProspectiveID, count(NotificationDate) as NotificationCount from Prospective
+		inner join Notification on ProspectiveID = CustomerID
+		group by ProspectiveID
+		having NotificationCount >= 3) as a
+	inner join Notification on a.ProspectiveID = CustomerID
+	group by a.ProspectiveID
+    having timestampdiff(year, MostRecentContact, curdate()) >= 1) as b
+inner join Customer on b.ProspectiveID = Customer.CustomerID
+inner join Individual on Customer.CustomerID = Individual.CustomerID
+union
+select CustomerType, b.ProspectiveID, CorporationName from (
+	select a.ProspectiveID, max(NotificationDate) as MostRecentContact from (
+		select ProspectiveID, count(NotificationDate) as NotificationCount from Prospective
+		inner join Notification on ProspectiveID = CustomerID
+		group by ProspectiveID
+		having NotificationCount >= 3) as a
+	inner join Notification on a.ProspectiveID = CustomerID
+	group by a.ProspectiveID
+    having timestampdiff(year, MostRecentContact, curdate()) >= 1) as b
+inner join Customer on b.ProspectiveID = Customer.CustomerID
+inner join Corporation on Customer.CustomerID = Corporation.CustomerID;
